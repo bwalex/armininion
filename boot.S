@@ -87,6 +87,17 @@ zero_bss_done:
 	bl uart_write
 
 
+	// Set up exception vector table
+	// fault handler: read ESR_EL1, FAR_EL1
+	adr x0, str_enable_exceptions
+	bl uart_write
+	// Use the VA for VBAR_EL1 already...
+	ldr x0, =exception_vectors
+	msr vbar_el1, x0
+	adr x0, str_done
+	bl uart_write
+
+
 	// Enable MMU & caches
 	adr x0, str_enable_mmu
 	bl uart_write
@@ -100,9 +111,6 @@ zero_bss_done:
 	bl uart_write
 
 
-	// Set up exception vector table
-
-
 	// Say hello
 	adr x0, str_hello
 	bl  uart_write
@@ -113,21 +121,92 @@ zero_bss_done:
 	// loop forever
 	b   .
 
+ev_unhandled:
+	adr x0, str_unhandled
+	bl  uart_write
+	b   .
+
+ev_unhandled_usr:
+	adr x0, str_unhandled_usr
+	bl  uart_write
+	b   .
+
+ev_sync_kern:
+	b   .
+
+ev_irq_kern:
+	b   .
+
+ev_sync_usr64:
+	b   .
+
+ev_irq_usr64:
+	b   .
+
+
+// source		Synchronous	IRQ/vIRQ	FIQ/vFIQ	SError/vSError
+// current EL (SP_EL0)	0x000		0x080		0x100		0x180
+// current EL (SP_ELx)	0x200		0x280		0x300		0x380
+// lower EL (AArch64)	0x400		0x480		0x500		0x580
+// lower EL (AArch32)	0x600		0x680		0x700		0x780
+.align 11
+exception_vectors:
+	.align 7
+	b ev_unhandled
+	.align 7
+	b ev_unhandled
+	.align 7
+	b ev_unhandled
+	.align 7
+	b ev_unhandled
+	.align 7
+	b ev_sync_kern
+	.align 7
+	b ev_irq_kern
+	.align 7
+	b ev_unhandled
+	.align 7
+	b ev_unhandled
+	.align 7
+	b ev_sync_usr64
+	.align 7
+	b ev_irq_usr64
+	.align 7
+	b ev_unhandled_usr
+	.align 7
+	b ev_unhandled_usr
+	.align 7
+	b ev_unhandled_usr
+	.align 7
+	b ev_unhandled_usr
+	.align 7
+	b ev_unhandled_usr
+	.align 7
+	b ev_unhandled_usr
+
+
 
 .balign 8
 .ltorg
 
 .section .data
 str_hello:
-	.asciz "Hello World!\n"
+	.asciz "Up and running (sort of)\n"
 str_inval_caches:
-	.asciz "Invalidating caches...     "
+	.asciz "Invalidating caches...          "
 str_setup_pt:
-	.asciz "Setting up translation...  "
+	.asciz "Setting up translation...       "
 str_enable_mmu:
-	.asciz "Enabling MMU & caches...   "
+	.asciz "Enabling MMU & caches...        "
+str_enable_exceptions:
+	.asciz "Enabling exception handling...  "
 str_done:
 	.asciz "done!\n"
+str_unhandled:
+	.asciz "Oh noes! Unhandled exception!\n"
+
+str_unhandled_usr:
+	.asciz "Oh noes! Unhandled user-mode exception!\n"
 
 .balign 4096
 pt_idmap_l1:
