@@ -103,8 +103,8 @@ zero_bss_done:
 	bl uart_write
 	mrs x0, sctlr_el1
 	orr x0, x0, #1
-	orr x0, x0, #2
-	orr x0, x0, #12
+	orr x0, x0, #(1 << 2)
+	orr x0, x0, #(1 << 12)
 	msr sctlr_el1, x0
 	isb
 	adr x0, str_done
@@ -204,7 +204,6 @@ str_done:
 	.asciz "done!\n"
 str_unhandled:
 	.asciz "Oh noes! Unhandled exception!\n"
-
 str_unhandled_usr:
 	.asciz "Oh noes! Unhandled user-mode exception!\n"
 
