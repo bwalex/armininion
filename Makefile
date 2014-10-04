@@ -7,9 +7,9 @@ boot.elf: boot.S uart.S caches.S boot.ld kern.c lokern.c subr_prf.c
 	$(TOOLCHAIN)gcc boot.S -c -o boot.o
 	$(TOOLCHAIN)gcc uart.S -c -o uart.o
 	$(TOOLCHAIN)gcc caches.S -c -o caches.o
-	$(TOOLCHAIN)gcc -fPIE lokern.c -c -O4 -o lokern.o
-	$(TOOLCHAIN)gcc       subr_prf.c -c -o subr_prf.o
-	$(TOOLCHAIN)gcc -fPIE kern.c -c -o kern.o
+	$(TOOLCHAIN)gcc -ffreestanding -fPIE lokern.c -c -O4 -o lokern.o
+	$(TOOLCHAIN)gcc -ffreestanding       subr_prf.c -c -o subr_prf.o
+	$(TOOLCHAIN)gcc -ffreestanding -fPIE kern.c -c -o kern.o
 	$(TOOLCHAIN)ld -T boot.ld -nostdlib -nodefaultlibs boot.o uart.o caches.o lokern.o kern.o subr_prf.o -o boot.elf
 
 clean:
