@@ -98,18 +98,26 @@ zero_bss_done:
 	bl uart_write
 
 
-	// Enable MMU & caches
+	// Enable MMU & caches; and, in general, SCTLR_EL1
 	adr x0, str_enable_mmu
 	bl uart_write
-	mrs x0, sctlr_el1
-	orr x0, x0, #1
-	orr x0, x0, #(1 << 2)
-	orr x0, x0, #(1 << 12)
+	orr x0, xzr, #(1 <<  0) // MMU enable
+	orr x0, x0,  #(1 <<  2) // Cache enable
+	orr x0, x0,  #(1 <<  3) // Stack alignment check enable
+	orr x0, x0,  #(1 <<  8) // SETEND unallocated
+	orr x0, x0,  #(1 << 12) // I-cache enable
+	orr x0, x0,  #(1 << 14) // DCZVA available at EL0
+	orr x0, x0,  #(1 << 26) // DCC*VA and IC*VA available at EL0
 	msr sctlr_el1, x0
 	isb
 	adr x0, str_done
 	bl uart_write
 
+	// Enable FP
+	orr x0, xzr, #(1 << 28) // Trap access to trace functionality
+	orr x0, x0,  #(3 << 20) // Don't trap any FP accesses in either EL0 or EL1
+	msr cpacr_el1, x0
+	isb
 
 	// Say hello
 	adr x0, str_hello

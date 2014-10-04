@@ -1,3 +1,5 @@
+#include "subr.h"
+
 void hi_there(void)
 {
 	uart_write("Hi there!\n");
@@ -5,7 +7,8 @@ void hi_there(void)
 
 void kern(void)
 {
-	uart_write("Hello from C!\n");
+	uart_write("moo\n");
+	kprintf("Hello from C, %s\n", "mate");
 	hi_there();
 	return;
 }

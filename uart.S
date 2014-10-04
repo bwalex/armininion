@@ -1,5 +1,6 @@
 .section .text
 .global uart_write
+.global uart_putc
 
 #define UART_BASE	0x09000000
 
@@ -34,6 +35,24 @@ uart_write_done:
 	ldp x19,x20, [sp],#0x10
 
 	ret
+
+
+uart_putc:
+	stp x19,x20, [sp,#-0x10]!
+	adr x19, uart_base
+	ldr x19, [x19]
+
+uart_putc_wait:
+	// Check TXFF flag
+	ldrb w20, [x19, #0x018]
+	tbnz w20, #5, uart_putc_wait
+
+	// Write to data register
+	strb w0, [x19]
+
+	ldp x19,x20, [sp],#0x10
+	ret
+
 
 .balign 8
 .ltorg
